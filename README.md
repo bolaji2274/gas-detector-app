@@ -126,7 +126,7 @@ Connect the components to the ESP32 as follows:
 ### 2. App Setup
 1.  Clone this repository:
     ```bash
-    git clone [https://github.com/yourusername/gas-detection-app.git](https://github.com/yourusername/gas-detection-app.git)
+    git clone [https://github.com/bolaji2274/gas-detection-app.git](https://github.com/bolaji2274/gas-detection-app.git)
     ```
 2.  Navigate to the app directory:
     ```bash
