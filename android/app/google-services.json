@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "27532992082",
+    "project_id": "gas-detection-system-30cc0",
+    "storage_bucket": "gas-detection-system-30cc0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:27532992082:android:cf763cc5c3372d396e098b",
+        "android_client_info": {
+          "package_name": "com.bolaji.gasdetector"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCajCX5gQXQQTVq0xAf443LB6_-YfFt_ME"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
