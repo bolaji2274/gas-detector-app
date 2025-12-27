@@ -155,7 +155,7 @@ Connect the components to the ESP32 as follows:
 |:---:|:---:|:---:|
 | <img src="assets/login_screenshot.png" width="200"> | <img src="assets/dashboard_screenshot.png" width="200"> | <img src="assets/alert_screenshot.png" width="200"> |
 
-*(Make sure to upload images to an `assets` folder in your repo and update the paths above)*
+<!-- *(Make sure to upload images to an `assets` folder in your repo and update the paths above)* -->
 
 ---
 
