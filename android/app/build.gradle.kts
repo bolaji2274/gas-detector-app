@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.gas_detector_app"
+    namespace = "com.bolaji.gasdetector"  // ✅ Must match google-services.json
     compileSdk = 36  // ✅ Updated to 36
     
     ndkVersion = "27.0.12077973"  // ✅ Updated NDK
@@ -22,8 +22,8 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.gas_detector_app"
-        minSdk = 21
+        applicationId = "com.bolaji.gasdetector"  // ✅ Must match google-services.json
+        minSdk = flutter.minSdkVersion
         targetSdk = 36  // ✅ Updated to 36
         versionCode = 1
         versionName = "1.0"
@@ -43,5 +43,5 @@ flutter {
 
 dependencies {
     implementation("androidx.multidex:multidex:2.0.1")
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")  // ✅ Add desugaring
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4") // ✅ Add desugaring
 }
