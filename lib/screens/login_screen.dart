@@ -77,6 +77,34 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // UPDATED: Google Sign In Handler
+  Future<void> _handleGoogleSignIn() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final firebaseService = Provider.of<FirebaseService>(context, listen: false);
+
+    final success = await authService.signInWithGoogle();
+
+    if (!mounted) return;
+
+    if (success) {
+      await firebaseService.initialize();
+
+      if (!mounted) return;
+
+      Helpers.showSnackBar(context, 'Welcome!');
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      if (authService.errorMessage != null) {
+        Helpers.showSnackBar(
+          context,
+          authService.errorMessage!,
+          isError: true,
+        );
+      }
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
@@ -300,20 +328,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Google Sign In (Optional)
+                  // UPDATED: Google Sign In Button
                   OutlinedButton.icon(
-                    onPressed: () {
-                      // Implement Google Sign In
-                      Helpers.showSnackBar(
-                        context,
-                        'Google Sign In coming soon',
-                      );
-                    },
+                    onPressed: authService.isLoading ? null : _handleGoogleSignIn,
                     icon: Image.asset(
                       'assets/icons/google.png',
                       height: 24,
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.g_mobiledata);
+                        return const Icon(Icons.g_mobiledata, size: 32);
                       },
                     ),
                     label: const Text('Continue with Google'),
@@ -330,6 +352,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // UPDATED: Forgot Password Dialog with navigation back to login
   void _showForgotPasswordDialog() {
     final emailController = TextEditingController();
 
@@ -350,6 +373,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 labelText: 'Email',
                 prefixIcon: Icon(Icons.email),
               ),
+              keyboardType: TextInputType.emailAddress,
             ),
           ],
         ),
@@ -360,7 +384,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              if (emailController.text.isEmpty) {
+              final email = emailController.text.trim();
+              
+              if (email.isEmpty) {
                 Helpers.showSnackBar(
                   context,
                   'Please enter your email',
@@ -368,21 +394,55 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
                 return;
               }
+              
+              if (!Helpers.isValidEmail(email)) {
+                Helpers.showSnackBar(
+                  context,
+                  'Please enter a valid email',
+                  isError: true,
+                );
+                return;
+              }
 
+              // Close dialog first
               Navigator.pop(context);
 
               final authService =
                   Provider.of<AuthService>(context, listen: false);
-              final success = await authService.resetPassword(
-                emailController.text.trim(),
-              );
+              final success = await authService.resetPassword(email);
 
               if (!mounted) return;
 
               if (success) {
-                Helpers.showSnackBar(
-                  context,
-                  'Password reset email sent! Check your inbox.',
+                // Show success dialog with navigation back
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => AlertDialog(
+                    title: const Row(
+                      children: [
+                        Icon(Icons.check_circle, color: AppTheme.successColor),
+                        SizedBox(width: 8),
+                        Text('Email Sent'),
+                      ],
+                    ),
+                    content: Text(
+                      'Password reset email sent to $email.\n\nPlease check your inbox and follow the instructions to reset your password.',
+                    ),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context); // Close dialog
+                          // Already on login screen, just show snackbar
+                          Helpers.showSnackBar(
+                            context,
+                            'You can now sign in with your new password',
+                          );
+                        },
+                        child: const Text('Back to Login'),
+                      ),
+                    ],
+                  ),
                 );
               } else {
                 Helpers.showSnackBar(

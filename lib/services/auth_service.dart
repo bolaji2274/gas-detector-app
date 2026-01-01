@@ -201,6 +201,68 @@ class AuthService with ChangeNotifier {
     }
   }
   */
+
+  /// Sign in with Google
+  Future<bool> signInWithGoogle() async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+      
+      // Trigger Google Sign In
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      if (googleUser == null) {
+        // User cancelled the sign-in
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+      
+      // Obtain auth details
+      final GoogleSignInAuthentication googleAuth = 
+          await googleUser.authentication;
+      
+      // Create credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      
+      // Sign in to Firebase
+      UserCredential userCredential = 
+          await _auth.signInWithCredential(credential);
+      
+      // Create user profile if new user
+      if (userCredential.additionalUserInfo?.isNewUser ?? false) {
+        await _createUserProfile(
+          userCredential.user!,
+          userCredential.user!.displayName ?? 'User',
+        );
+      }
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+      
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Google sign in failed: ${e.toString()}';
+      notifyListeners();
+      print('Google sign in error: $e');
+      return false;
+    }
+  }
+  
+  /// Sign out from Google
+  Future<void> signOutGoogle() async {
+    try {
+      await _googleSignIn.signOut();
+      await _auth.signOut();
+    } catch (e) {
+      print('Error signing out from Google: $e');
+    }
+  }
   
   // ==================== USER PROFILE ====================
   

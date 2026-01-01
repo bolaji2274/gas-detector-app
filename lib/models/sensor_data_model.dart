@@ -1,10 +1,14 @@
+// ==================== UPDATED SENSOR_DATA_MODEL.DART ====================
+// lib/models/sensor_data_model.dart
+// Change to show only LPG/Gas data
+
 import 'package:flutter/material.dart';
 
 class SensorData {
-  final double lpg;
+  final double lpg;          // Main gas reading from MQ-6
   final int lpgRaw;
-  final double co;
-  final int coRaw;
+  final double co;           // Will be 0 (not used)
+  final int coRaw;           // Will be 0 (not used)
   final String status;
   final int statusCode;
   final int timestamp;
@@ -15,8 +19,8 @@ class SensorData {
   SensorData({
     required this.lpg,
     required this.lpgRaw,
-    required this.co,
-    required this.coRaw,
+    this.co = 0,              // Default to 0
+    this.coRaw = 0,           // Default to 0
     required this.status,
     required this.statusCode,
     required this.timestamp,
@@ -29,8 +33,8 @@ class SensorData {
     return SensorData(
       lpg: (map['lpg'] ?? 0).toDouble(),
       lpgRaw: map['lpgRaw'] ?? 0,
-      co: (map['co'] ?? 0).toDouble(),
-      coRaw: map['coRaw'] ?? 0,
+      co: (map['co'] ?? 0).toDouble(),      // May be 0
+      coRaw: map['coRaw'] ?? 0,             // May be 0
       status: map['status'] ?? 'safe',
       statusCode: map['statusCode'] ?? 0,
       timestamp: map['timestamp'] ?? 0,

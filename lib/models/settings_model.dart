@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 
 class DeviceSettings {
   final GasThresholds lpgThresholds;
-  final GasThresholds coThresholds;
+  // final GasThresholds coThresholds;
   final AlertSettings alertSettings;
   final NotificationPreferences notificationPreferences;
   final DataRetention dataRetention;
 
   DeviceSettings({
     required this.lpgThresholds,
-    required this.coThresholds,
+    // required this.coThresholds,
     required this.alertSettings,
     required this.notificationPreferences,
     required this.dataRetention,
@@ -20,7 +20,7 @@ class DeviceSettings {
   factory DeviceSettings.fromMap(Map<dynamic, dynamic> map) {
     return DeviceSettings(
       lpgThresholds: GasThresholds.fromMap(map['thresholds']['lpg']),
-      coThresholds: GasThresholds.fromMap(map['thresholds']['co']),
+      // coThresholds: GasThresholds.fromMap(map['thresholds']['co']),
       alertSettings: AlertSettings.fromMap(map['alerts']),
       notificationPreferences: NotificationPreferences.fromMap(
         map['notifications'],
@@ -33,7 +33,7 @@ class DeviceSettings {
     return {
       'thresholds': {
         'lpg': lpgThresholds.toMap(),
-        'co': coThresholds.toMap(),
+        // 'co': coThresholds.toMap(),
       },
       'alerts': alertSettings.toMap(),
       'notifications': notificationPreferences.toMap(),
@@ -57,10 +57,10 @@ class GasThresholds {
 
   factory GasThresholds.fromMap(Map<dynamic, dynamic> map) {
     return GasThresholds(
-      safe: map['safe'] ?? 0,
-      warning: map['warning'] ?? 0,
-      danger: map['danger'] ?? 0,
-      critical: map['critical'] ?? 0,
+      safe: map['safe'] ?? 200,
+      warning: map['warning'] ?? 500,
+      danger: map['danger'] ?? 1000,
+      critical: map['critical'] ?? 2000,
     );
   }
 

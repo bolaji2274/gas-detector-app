@@ -123,6 +123,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // Already imported
 
 import 'services/firebase_service.dart';
 import 'services/auth_service.dart';
@@ -131,11 +132,15 @@ import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'utils/theme.dart';
 
-void main() async {
-  // ✅ ADD THIS LINE - Required before Firebase initialization
+Future<void> main() async {
+  // Required before any asynchronous initialization
   WidgetsFlutterBinding.ensureInitialized();
   
-  // ✅ Initialize Firebase here in main()
+  // 1. Load Environment Variables
+  // This must happen before Firebase or other services that might need the keys
+  await dotenv.load(fileName: ".env");
+  
+  // 2. Initialize Firebase
   await Firebase.initializeApp();
   
   runApp(const MyApp());
@@ -146,7 +151,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Remove FutureBuilder - Firebase is already initialized
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthService()),
