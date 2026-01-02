@@ -2,11 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:google_sign_in/google_sign_in.dart'; // ← Add this import
 
 class AuthService with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseDatabase _database = FirebaseDatabase.instance;
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(); // ← Add this line
   
   User? _user;
   User? get user => _user;
