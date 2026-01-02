@@ -28,6 +28,37 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// --- FIX START: Safely Inject Namespace AND JVM Target for qr_code_scanner ---
+subprojects {
+    if (project.name == "qr_code_scanner") {
+        
+        val fixPlugin = {
+            // 1. Fix the Namespace issue
+            val android = project.extensions.findByName("android") as? com.android.build.gradle.BaseExtension
+            if (android != null && android.namespace == null) {
+                android.namespace = "net.touchcapture.qr.flutterqr"
+                println("✅ Fixed namespace for qr_code_scanner") 
+            }
+
+            // 2. Fix the Inconsistent JVM Target issue
+            project.tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+                kotlinOptions {
+                    jvmTarget = "1.8"
+                }
+            }
+        }
+
+        if (project.state.executed) {
+            fixPlugin()
+        } else {
+            project.afterEvaluate {
+                fixPlugin()
+            }
+        }
+    }
+}
+// --- FIX END ---
+
 tasks.register<Delete>("clean") {
     delete(rootProject.buildDir)
 }
