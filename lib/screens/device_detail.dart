@@ -317,10 +317,18 @@
 // ==================== UPDATED GAS_GAUGE.DART ====================
 // Single gauge for LPG only
 
-import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_gauges/gauges.dart';
-import '../utils/theme.dart';
+// ==================== UPDATED DEVICE_DETAIL_SCREEN.DART ====================
+// lib/screens/device_details.dart
 
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:syncfusion_flutter_gauges/gauges.dart'; // ✅ Ensure this is in pubspec.yaml
+import '../models/device_model.dart';
+import '../services/firebase_service.dart';
+import '../utils/theme.dart';
+// import '../widgets/gas_gauge.dart'; // ❌ REMOVED: Class is now inline below
+
+// ✅ ADDED: GasGauge class integrated directly
 class GasGauge extends StatelessWidget {
   final double value;
   final double maxValue;
@@ -460,16 +468,6 @@ class GasGauge extends StatelessWidget {
   }
 }
 
-// ==================== UPDATED DEVICE_DETAIL_SCREEN.DART ====================
-// Single gauge display
-
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../models/device_model.dart';
-import '../services/firebase_service.dart';
-import '../utils/theme.dart';
-import '../widgets/gas_gauge.dart';
-
 class DeviceDetailScreen extends StatefulWidget {
   final Device device;
 
@@ -480,7 +478,7 @@ class DeviceDetailScreen extends StatefulWidget {
 }
 
 class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
-  int _selectedPeriod = 24; // hours
+  // int _selectedPeriod = 24; // Unused in this snippet but kept if you need it
 
   @override
   Widget build(BuildContext context) {

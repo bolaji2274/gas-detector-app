@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:mobile_scanner/mobile_scanner.dart'; // ✅ UPDATED
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
@@ -21,14 +21,17 @@ class DevicePairingScreen extends StatefulWidget {
   State<DevicePairingScreen> createState() => _DevicePairingScreenState();
 }
 
-class _DevicePairingScreenState extends State<DevicePairingScreen> {
+class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   final _deviceIdController = TextEditingController();
   final _nameController = TextEditingController();
   final _locationController = TextEditingController();
   
-  QRViewController? _qrController;
-  final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
+  // ✅ UPDATED: MobileScannerController instead of QRViewController
+  final MobileScannerController _scannerController = MobileScannerController(
+    detectionSpeed: DetectionSpeed.noDuplicates,
+    returnImage: false,
+  );
   
   bool _isLoading = false;
   bool _isScanning = false;
@@ -36,17 +39,45 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
   String? _deviceIpAddress;
 
   @override
+  void initState() {
+    super.initState();
+    // ✅ ADDED: Lifecycle observer for Android 14 stability
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // ✅ ADDED: Handle camera pause/resume to prevent crashes
+    if (!_scannerController.value.isInitialized) return;
+    
+    switch (state) {
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        return;
+      case AppLifecycleState.resumed:
+        // Restart scanner when app comes back to foreground
+        _scannerController.start();
+      case AppLifecycleState.inactive:
+        // Stop scanner when app goes background
+        _scannerController.stop();
+    }
+  }
+
+  @override
   void dispose() {
+    // ✅ ADDED: Remove observer
+    WidgetsBinding.instance.removeObserver(this);
     _deviceIdController.dispose();
     _nameController.dispose();
     _locationController.dispose();
-    _qrController?.dispose();
+    _scannerController.dispose(); // ✅ UPDATED
     super.dispose();
   }
 
   // ==================== PAIRING METHODS ====================
   
-  /// Method 1: Manual Device ID Entry
+  /// Method 1: Manual Device ID Entry (UNCHANGED)
   Future<void> _pairManually() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -73,19 +104,24 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
     }
   }
   
-  /// Method 2: QR Code Scanning
+  /// Method 2: QR Code Scanning (UPDATED)
   void _scanQRCode() {
     setState(() => _isScanning = true);
+    _scannerController.start(); // Ensure camera starts
   }
   
-  void _onQRViewCreated(QRViewController controller) {
-    _qrController = controller;
-    controller.scannedDataStream.listen((scanData) {
-      if (scanData.code != null) {
-        _qrController?.pauseCamera();
+  // ✅ UPDATED: Callback for MobileScanner
+  void _onDetect(BarcodeCapture capture) {
+    final List<Barcode> barcodes = capture.barcodes;
+    
+    if (barcodes.isNotEmpty) {
+      final String? code = barcodes.first.rawValue;
+      
+      if (code != null) {
+        _scannerController.stop(); // Pause camera immediately
         
         // Parse QR code data (format: GD_XXXXXXXX|IP_ADDRESS)
-        final parts = scanData.code!.split('|');
+        final parts = code.split('|');
         final deviceId = parts[0];
         final ipAddress = parts.length > 1 ? parts[1] : null;
         
@@ -101,17 +137,16 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
           _fetchDeviceInfo(ipAddress);
         }
       }
-    });
+    }
   }
   
-  /// Method 3: Local Network Discovery
+  /// Method 3: Local Network Discovery (UNCHANGED)
   Future<void> _discoverDevices() async {
     setState(() => _isLoading = true);
     
     Helpers.showSnackBar(context, 'Scanning local network...');
     
     // Scan local network for devices
-    // This is a simplified version - full implementation would use mDNS
     final devices = await _scanLocalNetwork();
     
     setState(() => _isLoading = false);
@@ -129,7 +164,7 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
     _showDeviceSelectionDialog(devices);
   }
   
-  // ==================== DEVICE PAIRING LOGIC ====================
+  // ==================== DEVICE PAIRING LOGIC (UNCHANGED) ====================
   
   Future<bool> _pairDevice(String deviceId, String name, String location) async {
     final authService = Provider.of<AuthService>(context, listen: false);
@@ -164,13 +199,10 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
     User user,
   ) async {
     try {
-      // Get Firebase Function URL from environment or config
       final firebaseFunctionUrl = dotenv.env['firebase_function_url'] ?? '';
       
-      // Generate auth token for this device
       final authToken = await _generateDeviceAuthToken(deviceId, user.uid);
       
-      // Send configuration to device
       final response = await http.post(
         Uri.parse('http://$ipAddress/api/configure'),
         headers: {'Content-Type': 'application/json'},
@@ -194,8 +226,6 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
   }
   
   Future<String> _generateDeviceAuthToken(String deviceId, String userId) async {
-    // In production, this should be done server-side
-    // For now, generate a secure token
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     return 'token_${deviceId}_${userId}_$timestamp'.hashCode.toString();
   }
@@ -221,11 +251,7 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
   }
   
   Future<List<Map<String, String>>> _scanLocalNetwork() async {
-    // This is a simplified version
-    // Full implementation would use flutter_mdns or similar
     List<Map<String, String>> devices = [];
-    
-    // Example: Scan 192.168.1.1 - 192.168.1.255
     final subnet = '192.168.1';
     
     for (int i = 1; i <= 255; i++) {
@@ -463,7 +489,7 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
 
             const SizedBox(height: 32),
 
-            // Help Card
+            // Help Card (UNCHANGED)
             Card(
               color: Colors.blue.withOpacity(0.1),
               child: Padding(
@@ -508,37 +534,56 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
     );
   }
   
+  // ✅ UPDATED: QR Scanner UI for MobileScanner
   Widget _buildQRScanner() {
     return Column(
       children: [
         Expanded(
-          child: QRView(
-            key: _qrKey,
-            onQRViewCreated: _onQRViewCreated,
-            overlay: QrScannerOverlayShape(
-              borderColor: AppTheme.primaryColor,
-              borderRadius: 10,
-              borderLength: 30,
-              borderWidth: 10,
-              cutOutSize: 300,
-            ),
+          child: MobileScanner(
+            controller: _scannerController,
+            onDetect: _onDetect,
+            // Simple overlay using a Container with border
+            overlayBuilder: (context, constraints) {
+              return Center(
+                child: Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppTheme.primaryColor, width: 4),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+            },
           ),
         ),
         Container(
           padding: const EdgeInsets.all(20),
+          color: Colors.black.withOpacity(0.8), // Dark background for controls
           child: Column(
             children: [
               const Text(
                 'Scan the QR code on your device',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  _qrController?.pauseCamera();
-                  setState(() => _isScanning = false);
-                },
-                child: const Text('Cancel'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Toggle Flash
+                  IconButton(
+                    icon: const Icon(Icons.flash_on, color: Colors.white),
+                    onPressed: () => _scannerController.toggleTorch(),
+                  ),
+                  // Cancel Button
+                  ElevatedButton(
+                    onPressed: () {
+                      _scannerController.stop();
+                      setState(() => _isScanning = false);
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                ],
               ),
             ],
           ),
@@ -547,4 +592,3 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
     );
   }
 }
-
