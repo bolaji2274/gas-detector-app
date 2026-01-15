@@ -57,7 +57,16 @@ jobs:
           
           # 3. Decode the keystore file INTO the android/app folder
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
-
+      # Cache Gradle dependencies for faster Android builds
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
       # 5. Build the Release APK
       - name: Build APK
         run: |
