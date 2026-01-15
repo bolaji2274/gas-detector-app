@@ -3,7 +3,7 @@ name: Gas Detector App Release
 on:
   push:
     branches:
-      - main
+      - development
 
 jobs:
   build:
