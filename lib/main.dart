@@ -122,8 +122,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // Already imported
+import 'package:google_fonts/google_fonts.dart'; // Kept as you had it
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:permission_handler/permission_handler.dart'; // ✅ ADDED THIS
 
 import 'services/firebase_service.dart';
 import 'services/auth_service.dart';
@@ -133,17 +134,43 @@ import 'screens/home_screen.dart';
 import 'utils/theme.dart';
 
 Future<void> main() async {
-  // Required before any asynchronous initialization
+  // 1. Initialize Bindings (Required for async code)
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 1. Load Environment Variables
-  // This must happen before Firebase or other services that might need the keys
-  await dotenv.load(fileName: ".env");
+  // 2. Load Environment Variables with Error Handling
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint("⚠️ Warning: .env file not found or empty. Using defaults.");
+  }
   
-  // 2. Initialize Firebase
-  await Firebase.initializeApp();
+  // 3. Initialize Firebase
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint("❌ Firebase Initialization Error: $e");
+  }
+
+  // 4. ✅ ANDROID 14 FIX: Request Permissions on Start
+  // This prevents the "App has a bug" crash when services start early
+  await requestAndroid14Permissions();
   
   runApp(const MyApp());
+}
+
+/// Helper function to handle Android 13/14 runtime permissions
+Future<void> requestAndroid14Permissions() async {
+  // We request Notification (for alerts) and Camera (for QR Scanner)
+  // The 'await' ensures we don't start the UI until we at least try to ask.
+  Map<Permission, PermissionStatus> statuses = await [
+    Permission.notification,
+    Permission.camera,
+    // Note: 'location' might be needed if you use WiFi scanning for ESP32
+  ].request();
+
+  if (statuses[Permission.notification]!.isDenied) {
+    debugPrint("⚠️ User denied notifications. Gas alerts may not work!");
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -162,7 +189,8 @@ class MyApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: const SplashScreen(),
+        // The Splash Screen will handle the transition to Login/Home
+        home: const SplashScreen(), 
         routes: {
           '/login': (context) => const LoginScreen(),
           '/home': (context) => const HomeScreen(),

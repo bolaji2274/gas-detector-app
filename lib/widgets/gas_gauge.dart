@@ -102,7 +102,6 @@
 
 // ==================== UPDATED GAS_GAUGE.DART ====================
 // Single gauge for LPG only
-
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import '../utils/theme.dart';
@@ -121,6 +120,9 @@ class GasGauge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ ONLY UPDATE: Ensure the needle doesn't go off-screen if value > maxValue
+    final displayValue = value > maxValue ? maxValue : value;
+
     return Column(
       children: [
         Text(
@@ -143,33 +145,33 @@ class GasGauge extends StatelessWidget {
                     endValue: ranges[0],
                     color: AppTheme.safeColor,
                     label: 'Safe',
-                    labelStyle: const GaugeTextStyle(fontSize: 10),
+                    labelStyle: const GaugeTextStyle(fontSize: 10, color: Colors.white),
                   ),
                   GaugeRange(
                     startValue: ranges[0],
                     endValue: ranges[1],
                     color: AppTheme.warningStatusColor,
                     label: 'Warning',
-                    labelStyle: const GaugeTextStyle(fontSize: 10),
+                    labelStyle: const GaugeTextStyle(fontSize: 10, color: Colors.white),
                   ),
                   GaugeRange(
                     startValue: ranges[1],
                     endValue: ranges[2],
                     color: AppTheme.dangerStatusColor,
                     label: 'Danger',
-                    labelStyle: const GaugeTextStyle(fontSize: 10),
+                    labelStyle: const GaugeTextStyle(fontSize: 10, color: Colors.white),
                   ),
                   GaugeRange(
                     startValue: ranges[2],
                     endValue: maxValue,
                     color: AppTheme.criticalStatusColor,
                     label: 'Critical',
-                    labelStyle: const GaugeTextStyle(fontSize: 10),
+                    labelStyle: const GaugeTextStyle(fontSize: 10, color: Colors.white),
                   ),
                 ],
                 pointers: <GaugePointer>[
                   NeedlePointer(
-                    value: value,
+                    value: displayValue, // ✅ Use the clamped value here
                     enableAnimation: true,
                     needleLength: 0.7,
                     needleStartWidth: 1,
@@ -186,7 +188,7 @@ class GasGauge extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          value.toStringAsFixed(0),
+                          value.toStringAsFixed(0), // ✅ Shows real value even if > 5000
                           style: Theme.of(context)
                               .textTheme
                               .headlineLarge
@@ -211,7 +213,7 @@ class GasGauge extends StatelessWidget {
         
         const SizedBox(height: 16),
         
-        // Legend
+        // Legend (Keep your original code)
         Wrap(
           spacing: 16,
           runSpacing: 8,

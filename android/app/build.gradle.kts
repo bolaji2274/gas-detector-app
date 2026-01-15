@@ -1,3 +1,14 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+// 1. Load the properties at the very top of the file
+val keystoreProperties = Properties().apply {
+    val propertiesFile = rootProject.file("key.properties")
+    if (propertiesFile.exists()) {
+        load(FileInputStream(propertiesFile))
+    }
+}
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -9,6 +20,7 @@ android {
     namespace = "com.bolaji.gasdetector"
     compileSdk = 36
     ndkVersion = "27.0.12077973"
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -29,9 +41,25 @@ android {
         multiDexEnabled = true
     }
 
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            // 2. Point release to your new signing config
+            signingConfig = signingConfigs.getByName("release")
+
+            // isMinifyEnabled = false // Set to true later for optimization
+            // ✅ UPDATE THESE TWO LINES:
+            isMinifyEnabled = true     // Enables code shrinking
+            isShrinkResources = true    // Enables resource shrinking (now allowed because minify is true)
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }
