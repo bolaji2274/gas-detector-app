@@ -7,15 +7,17 @@ on:
       - main
     # ONLY trigger if files in these folders change:
     paths:
-      - 'lib/**'          # Any Dart code
-      - 'pubspec.yaml'    # Version or dependency changes
-      - 'android/**'      # Native Android changes
-      - 'assets/**'       # New icons or images
-    # IGNORE these files even if they are pushed to main:
-    paths-ignore:
-      - 'README.md'
-      - '.github/workflows/**'
-      - '.gitignore'
+      # 1. POSITIVE MATCHES: Trigger for these folders
+      - 'lib/**'
+      - 'pubspec.yaml'
+      - 'android/**'
+      - 'assets/**'
+      
+      # 2. NEGATIVE MATCHES: Do NOT trigger for these files
+      # (Note: In GitHub Actions, the last pattern to match wins)
+      - '!README.md'
+      - '!.github/workflows/**'
+      - '!.gitignore'
 
 jobs:
   build:
