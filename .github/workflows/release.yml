@@ -47,11 +47,15 @@ jobs:
       # 5. Decode Keystore and create key.properties
       - name: Prepare Signing
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+          # Create the properties file in the /android folder
           echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=app/upload-keystore.jks" >> android/key.properties
+          # SET THIS TO THE FILENAME ONLY (no "app/" prefix)
+          echo "storeFile=upload-keystore.jks" >> android/key.properties
+          
+          # Decode the keystore file INTO the android/app folder
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
 
       # 5. Build the Release APK
       - name: Build APK
@@ -80,7 +84,9 @@ jobs:
         with:
           tag_name: ${{ env.TAG_NAME }}
           name: "Gas Detector ${{ env.APP_VERSION }} (Build ${{ github.run_number }})"
-          body: "Automated release for version ${{ env.APP_VERSION }}."
+          body: |
+            ## What's New in this Build
+            ${{ steps.changelog.outputs.changelog }}
           draft: false
           prerelease: false
           files: build/app/outputs/flutter-apk/app-release.apk
