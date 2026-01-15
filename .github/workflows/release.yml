@@ -47,14 +47,15 @@ jobs:
       # 5. Decode Keystore and create key.properties
       - name: Prepare Signing
         run: |
-          # Create the properties file in the /android folder
+          # 1. Create the key.properties in the /android folder
           echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          # SET THIS TO THE FILENAME ONLY (no "app/" prefix)
+          
+          # 2. SET THIS TO FILENAME ONLY (Important!)
           echo "storeFile=upload-keystore.jks" >> android/key.properties
           
-          # Decode the keystore file INTO the android/app folder
+          # 3. Decode the keystore file INTO the android/app folder
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
 
       # 5. Build the Release APK
