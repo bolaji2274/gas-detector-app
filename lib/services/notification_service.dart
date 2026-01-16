@@ -162,9 +162,8 @@ class NotificationService with ChangeNotifier {
               importance: channelId == 'critical_alerts'
                   ? Importance.max
                   : Importance.high,
-              priority: channelId == 'critical_alerts'
-                  ? Priority.max
-                  : Priority.high,
+              priority:
+                  channelId == 'critical_alerts' ? Priority.max : Priority.high,
               icon: '@mipmap/ic_launcher',
               playSound: true,
               enableVibration: true,

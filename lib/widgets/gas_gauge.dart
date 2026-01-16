@@ -29,9 +29,9 @@
 //           title,
 //           style: Theme.of(context).textTheme.titleLarge,
 //         ),
-        
+
 //         const SizedBox(height: 16),
-        
+
 //         SizedBox(
 //           height: 200,
 //           child: SfRadialGauge(
@@ -129,9 +129,9 @@ class GasGauge extends StatelessWidget {
           'LPG/Home Gas Level',
           style: Theme.of(context).textTheme.titleLarge,
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         SizedBox(
           height: 250,
           child: SfRadialGauge(
@@ -145,28 +145,32 @@ class GasGauge extends StatelessWidget {
                     endValue: ranges[0],
                     color: AppTheme.safeColor,
                     label: 'Safe',
-                    labelStyle: const GaugeTextStyle(fontSize: 10, color: Colors.white),
+                    labelStyle:
+                        const GaugeTextStyle(fontSize: 10, color: Colors.white),
                   ),
                   GaugeRange(
                     startValue: ranges[0],
                     endValue: ranges[1],
                     color: AppTheme.warningStatusColor,
                     label: 'Warning',
-                    labelStyle: const GaugeTextStyle(fontSize: 10, color: Colors.white),
+                    labelStyle:
+                        const GaugeTextStyle(fontSize: 10, color: Colors.white),
                   ),
                   GaugeRange(
                     startValue: ranges[1],
                     endValue: ranges[2],
                     color: AppTheme.dangerStatusColor,
                     label: 'Danger',
-                    labelStyle: const GaugeTextStyle(fontSize: 10, color: Colors.white),
+                    labelStyle:
+                        const GaugeTextStyle(fontSize: 10, color: Colors.white),
                   ),
                   GaugeRange(
                     startValue: ranges[2],
                     endValue: maxValue,
                     color: AppTheme.criticalStatusColor,
                     label: 'Critical',
-                    labelStyle: const GaugeTextStyle(fontSize: 10, color: Colors.white),
+                    labelStyle:
+                        const GaugeTextStyle(fontSize: 10, color: Colors.white),
                   ),
                 ],
                 pointers: <GaugePointer>[
@@ -188,7 +192,8 @@ class GasGauge extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          value.toStringAsFixed(0), // ✅ Shows real value even if > 5000
+                          value.toStringAsFixed(
+                              0), // ✅ Shows real value even if > 5000
                           style: Theme.of(context)
                               .textTheme
                               .headlineLarge
@@ -210,9 +215,9 @@ class GasGauge extends StatelessWidget {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Legend (Keep your original code)
         Wrap(
           spacing: 16,
@@ -228,7 +233,7 @@ class GasGauge extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildLegendItem(String label, Color color, String range) {
     return Row(
       mainAxisSize: MainAxisSize.min,

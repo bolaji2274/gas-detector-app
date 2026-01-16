@@ -1,6 +1,5 @@
 // ==================== DEVICE SETTINGS MODEL ====================
 // Import for Color
-import 'package:flutter/material.dart';
 
 class DeviceSettings {
   final GasThresholds lpgThresholds;
@@ -173,4 +172,3 @@ class DataRetention {
     };
   }
 }
-

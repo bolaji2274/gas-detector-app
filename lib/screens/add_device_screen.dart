@@ -2,12 +2,7 @@
 // lib/screens/add_device_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../services/firebase_service.dart';
-import '../utils/theme.dart';
-import '../utils/helpers.dart';
 import 'device_pairing_screen.dart';
-
 
 // class AddDeviceScreen extends StatefulWidget {
 //   const AddDeviceScreen({super.key});
@@ -260,7 +255,7 @@ class AddDeviceScreen extends StatelessWidget {
         ),
       );
     });
-    
+
     return const Scaffold(
       body: Center(
         child: CircularProgressIndicator(),

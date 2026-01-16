@@ -8,39 +8,39 @@ import '../models/alert_model.dart';
 class FirebaseService with ChangeNotifier {
   final FirebaseDatabase _database = FirebaseDatabase.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   // Current user's devices
   List<Device> _devices = [];
   List<Device> get devices => _devices;
-  
+
   // Selected device data
   Device? _selectedDevice;
   Device? get selectedDevice => _selectedDevice;
-  
+
   SensorData? _currentSensorData;
   SensorData? get currentSensorData => _currentSensorData;
-  
+
   List<SensorData> _historicalData = [];
   List<SensorData> get historicalData => _historicalData;
-  
+
   List<AlertModel> _alerts = [];
   List<AlertModel> get alerts => _alerts;
-  
+
   // Connection status
   bool _isConnected = true;
   bool get isConnected => _isConnected;
-  
+
   // Listeners
   DatabaseReference? _devicesRef;
   DatabaseReference? _sensorDataRef;
   DatabaseReference? _alertsRef;
-  
+
   // Initialize service
   Future<void> initialize() async {
     await _setupConnectionListener();
     await loadUserDevices();
   }
-  
+
   // Setup connection status listener
   Future<void> _setupConnectionListener() async {
     DatabaseReference connectedRef = _database.ref('.info/connected');
@@ -49,36 +49,36 @@ class FirebaseService with ChangeNotifier {
       notifyListeners();
     });
   }
-  
+
   // ==================== DEVICE MANAGEMENT ====================
-  
+
   /// Load all devices for current user
   Future<void> loadUserDevices() async {
     try {
       final user = _auth.currentUser;
       if (user == null) return;
-      
+
       // Get user's device list
       final userDevicesRef = _database.ref('users/${user.uid}/devices');
       final snapshot = await userDevicesRef.get();
-      
+
       if (!snapshot.exists) {
         _devices = [];
         notifyListeners();
         return;
       }
-      
+
       List<String> deviceIds = [];
-      snapshot.children.forEach((child) {
+      for (var child in snapshot.children) {
         deviceIds.add(child.key!);
-      });
-      
+      }
+
       // Load each device details
       List<Device> loadedDevices = [];
       for (String deviceId in deviceIds) {
         final deviceRef = _database.ref('devices/$deviceId');
         final deviceSnapshot = await deviceRef.get();
-        
+
         if (deviceSnapshot.exists) {
           loadedDevices.add(Device.fromMap(
             deviceSnapshot.value as Map<dynamic, dynamic>,
@@ -86,46 +86,45 @@ class FirebaseService with ChangeNotifier {
           ));
         }
       }
-      
+
       _devices = loadedDevices;
       notifyListeners();
-      
+
       // Auto-select first device if none selected
       if (_selectedDevice == null && _devices.isNotEmpty) {
         selectDevice(_devices[0].id);
       }
-      
     } catch (e) {
       print('Error loading devices: $e');
     }
   }
-  
+
   /// Select a device to monitor
   void selectDevice(String deviceId) {
     _selectedDevice = _devices.firstWhere(
       (d) => d.id == deviceId,
       orElse: () => _devices[0],
     );
-    
+
     // Setup listeners for this device
     _setupDeviceListeners(deviceId);
-    
+
     // Load historical data
     loadHistoricalData(deviceId);
-    
+
     // Load alerts
     loadAlerts(deviceId);
-    
+
     notifyListeners();
   }
-  
+
   /// Setup real-time listeners for selected device
   void _setupDeviceListeners(String deviceId) {
     // Cancel previous listeners
     _devicesRef?.onValue.drain();
     _sensorDataRef?.onValue.drain();
     _alertsRef?.onValue.drain();
-    
+
     // Device status listener
     _devicesRef = _database.ref('devices/$deviceId');
     _devicesRef!.onValue.listen((event) {
@@ -137,7 +136,7 @@ class FirebaseService with ChangeNotifier {
         notifyListeners();
       }
     });
-    
+
     // Sensor data listener
     _sensorDataRef = _database.ref('sensor_data/$deviceId/current');
     _sensorDataRef!.onValue.listen((event) {
@@ -148,38 +147,38 @@ class FirebaseService with ChangeNotifier {
         notifyListeners();
       }
     });
-    
+
     // Alerts listener
     _alertsRef = _database.ref('alerts/$deviceId');
     _alertsRef!.onValue.listen((event) {
       if (event.snapshot.exists) {
         List<AlertModel> loadedAlerts = [];
-        event.snapshot.children.forEach((child) {
+        for (var child in event.snapshot.children) {
           loadedAlerts.add(AlertModel.fromMap(
             child.value as Map<dynamic, dynamic>,
             child.key!,
           ));
-        });
-        
+        }
+
         // Sort by timestamp (newest first)
         loadedAlerts.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-        
+
         _alerts = loadedAlerts;
         notifyListeners();
       }
     });
   }
-  
+
   /// Add new device to user account
   Future<bool> addDevice(String deviceId, String name, String location) async {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
-      
+
       // Check if device exists
       final deviceRef = _database.ref('devices/$deviceId');
       final snapshot = await deviceRef.get();
-      
+
       if (!snapshot.exists) {
         // Create new device
         await deviceRef.set({
@@ -191,7 +190,7 @@ class FirebaseService with ChangeNotifier {
           'hardwareVersion': '1.0',
           'firmwareVersion': '1.0.0',
         });
-        
+
         // Create default settings
         await _database.ref('device_settings/$deviceId').set({
           'thresholds': {
@@ -224,62 +223,62 @@ class FirebaseService with ChangeNotifier {
           },
         });
       }
-      
+
       // Add device to user's device list
       await _database.ref('users/${user.uid}/devices/$deviceId').set(true);
-      
+
       // Reload devices
       await loadUserDevices();
-      
+
       return true;
     } catch (e) {
       print('Error adding device: $e');
       return false;
     }
   }
-  
+
   /// Remove device from user account
   Future<bool> removeDevice(String deviceId) async {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
-      
+
       await _database.ref('users/${user.uid}/devices/$deviceId').remove();
       await loadUserDevices();
-      
+
       return true;
     } catch (e) {
       print('Error removing device: $e');
       return false;
     }
   }
-  
+
   // ==================== SENSOR DATA ====================
-  
+
   /// Load historical sensor data
   Future<void> loadHistoricalData(String deviceId, {int hours = 24}) async {
     try {
       final endTime = DateTime.now().millisecondsSinceEpoch;
       final startTime = endTime - (hours * 60 * 60 * 1000);
-      
+
       final ref = _database.ref('sensor_history/$deviceId/hourly');
       final snapshot = await ref
           .orderByChild('timestamp')
           .startAt(startTime)
           .endAt(endTime)
           .get();
-      
+
       if (snapshot.exists) {
         List<SensorData> data = [];
-        snapshot.children.forEach((child) {
+        for (var child in snapshot.children) {
           data.add(SensorData.fromMap(
             child.value as Map<dynamic, dynamic>,
           ));
-        });
-        
+        }
+
         // Sort by timestamp
         data.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-        
+
         _historicalData = data;
         notifyListeners();
       }
@@ -287,27 +286,27 @@ class FirebaseService with ChangeNotifier {
       print('Error loading historical data: $e');
     }
   }
-  
+
   // ==================== ALERTS ====================
-  
+
   /// Load alerts for device
   Future<void> loadAlerts(String deviceId, {int limit = 50}) async {
     try {
       final ref = _database.ref('alerts/$deviceId');
       final snapshot = await ref.limitToLast(limit).get();
-      
+
       if (snapshot.exists) {
         List<AlertModel> loadedAlerts = [];
-        snapshot.children.forEach((child) {
+        for (var child in snapshot.children) {
           loadedAlerts.add(AlertModel.fromMap(
             child.value as Map<dynamic, dynamic>,
             child.key!,
           ));
-        });
-        
+        }
+
         // Sort by timestamp (newest first)
         loadedAlerts.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-        
+
         _alerts = loadedAlerts;
         notifyListeners();
       }
@@ -315,26 +314,26 @@ class FirebaseService with ChangeNotifier {
       print('Error loading alerts: $e');
     }
   }
-  
+
   /// Acknowledge an alert
   Future<void> acknowledgeAlert(String deviceId, String alertId) async {
     try {
       final user = _auth.currentUser;
       if (user == null) return;
-      
+
       await _database.ref('alerts/$deviceId/$alertId').update({
         'acknowledged': true,
         'acknowledgedAt': ServerValue.timestamp,
         'acknowledgedBy': user.uid,
       });
-      
+
       // Reload alerts
       await loadAlerts(deviceId);
     } catch (e) {
       print('Error acknowledging alert: $e');
     }
   }
-  
+
   /// Clear all alerts for device
   Future<void> clearAlerts(String deviceId) async {
     try {
@@ -345,21 +344,23 @@ class FirebaseService with ChangeNotifier {
       print('Error clearing alerts: $e');
     }
   }
-  
+
   // ==================== SETTINGS ====================
-  
+
   /// Update device thresholds
   Future<void> updateThresholds(
     String deviceId,
     Map<String, Map<String, int>> thresholds,
   ) async {
     try {
-      await _database.ref('device_settings/$deviceId/thresholds').set(thresholds);
+      await _database
+          .ref('device_settings/$deviceId/thresholds')
+          .set(thresholds);
     } catch (e) {
       print('Error updating thresholds: $e');
     }
   }
-  
+
   /// Update alert settings
   Future<void> updateAlertSettings(
     String deviceId,
@@ -371,7 +372,7 @@ class FirebaseService with ChangeNotifier {
       print('Error updating alert settings: $e');
     }
   }
-  
+
   /// Update notification preferences
   Future<void> updateNotificationPreferences(
     String deviceId,
@@ -385,14 +386,12 @@ class FirebaseService with ChangeNotifier {
       print('Error updating notification preferences: $e');
     }
   }
-  
+
   /// Get device settings
   Future<Map<String, dynamic>?> getDeviceSettings(String deviceId) async {
     try {
-      final snapshot = await _database
-          .ref('device_settings/$deviceId')
-          .get();
-      
+      final snapshot = await _database.ref('device_settings/$deviceId').get();
+
       if (snapshot.exists) {
         return Map<String, dynamic>.from(
           snapshot.value as Map<dynamic, dynamic>,
@@ -404,18 +403,16 @@ class FirebaseService with ChangeNotifier {
       return null;
     }
   }
-  
+
   // ==================== STATISTICS ====================
-  
+
   /// Get device statistics
-  Future<Map<String, dynamic>> getDeviceStatistics(
-    String deviceId,
-    {int days = 7}
-  ) async {
+  Future<Map<String, dynamic>> getDeviceStatistics(String deviceId,
+      {int days = 7}) async {
     try {
       final endTime = DateTime.now().millisecondsSinceEpoch;
       final startTime = endTime - (days * 24 * 60 * 60 * 1000);
-      
+
       // Get historical data
       final ref = _database.ref('sensor_history/$deviceId/hourly');
       final snapshot = await ref
@@ -423,7 +420,7 @@ class FirebaseService with ChangeNotifier {
           .startAt(startTime)
           .endAt(endTime)
           .get();
-      
+
       if (!snapshot.exists) {
         return {
           'avgLpg': 0.0,
@@ -433,34 +430,35 @@ class FirebaseService with ChangeNotifier {
           'alertCount': 0,
         };
       }
-      
+
       double totalLpg = 0;
       double totalCo = 0;
       double maxLpg = 0;
       double maxCo = 0;
       int count = 0;
-      
-      snapshot.children.forEach((child) {
+
+      for (var child in snapshot.children) {
         final data = child.value as Map<dynamic, dynamic>;
         final lpg = (data['lpgAvg'] ?? 0).toDouble();
         final co = (data['coAvg'] ?? 0).toDouble();
-        
+
         totalLpg += lpg;
         totalCo += co;
         maxLpg = lpg > maxLpg ? lpg : maxLpg;
         maxCo = co > maxCo ? co : maxCo;
         count++;
-      });
-      
+      }
+
       // Get alert count
       final alertsSnapshot = await _database
           .ref('alerts/$deviceId')
           .orderByChild('timestamp')
           .startAt(startTime)
           .get();
-      
-      int alertCount = alertsSnapshot.exists ? alertsSnapshot.children.length : 0;
-      
+
+      int alertCount =
+          alertsSnapshot.exists ? alertsSnapshot.children.length : 0;
+
       return {
         'avgLpg': count > 0 ? totalLpg / count : 0.0,
         'maxLpg': maxLpg,
@@ -474,9 +472,9 @@ class FirebaseService with ChangeNotifier {
       return {};
     }
   }
-  
+
   // ==================== CLEANUP ====================
-  
+
   /// Dispose listeners
   @override
   void dispose() {

@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "**" ] # Runs on all branches
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "development" ]
 
 jobs:
   analyze_and_test:

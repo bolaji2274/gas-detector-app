@@ -1,11 +1,9 @@
-
 // ==================== SETTINGS_SCREEN.DART ====================
 // lib/screens/settings_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
-import '../services/firebase_service.dart';
 import '../utils/theme.dart';
 import '../utils/helpers.dart';
 
@@ -48,14 +46,16 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Danger Zone
-          _buildSectionTitle(context, 'Danger Zone', color: AppTheme.errorColor),
+          _buildSectionTitle(context, 'Danger Zone',
+              color: AppTheme.errorColor),
           _buildDangerZone(context, authService),
         ],
       ),
     );
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title, {Color? color}) {
+  Widget _buildSectionTitle(BuildContext context, String title,
+      {Color? color}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
@@ -375,4 +375,3 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
-

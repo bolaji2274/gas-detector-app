@@ -29,14 +29,15 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     final authService = Provider.of<AuthService>(context, listen: false);
-    final firebaseService = Provider.of<FirebaseService>(context, listen: false);
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
 
     // Check if user is already logged in
     if (authService.isAuthenticated) {
       // Initialize Firebase service for logged in user
       await firebaseService.initialize();
 
-      // Navigate to home 
+      // Navigate to home
       Navigator.pushReplacementNamed(context, '/home');
     } else {
       Navigator.pushReplacementNamed(context, '/login');

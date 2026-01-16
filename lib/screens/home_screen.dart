@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/firebase_service.dart';
 import '../services/auth_service.dart';
-import '../models/device_model.dart';
-import '../models/sensor_data_model.dart';
 import '../utils/theme.dart';
 import '../utils/helpers.dart';
 import '../widgets/device_card.dart';
@@ -50,17 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
               return Container(
                 margin: const EdgeInsets.only(right: 8),
                 child: Icon(
-                  service.isConnected
-                      ? Icons.cloud_done
-                      : Icons.cloud_off,
-                  color: service.isConnected
-                      ? Colors.white
-                      : Colors.red[300],
+                  service.isConnected ? Icons.cloud_done : Icons.cloud_off,
+                  color: service.isConnected ? Colors.white : Colors.red[300],
                 ),
               );
             },
           ),
-          
+
           // Notifications
           IconButton(
             icon: const Icon(Icons.notifications),
@@ -75,15 +69,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      
       drawer: _buildDrawer(),
-      
       body: _selectedIndex == 0
           ? _buildHomeTab()
           : _selectedIndex == 1
               ? const AlertsScreen()
               : const SettingsScreen(),
-      
       floatingActionButton: _selectedIndex == 0
           ? FloatingActionButton(
               onPressed: () {
@@ -97,7 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Icon(Icons.add),
             )
           : null,
-      
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
@@ -146,37 +136,36 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 // Device Selector
                 _buildDeviceSelector(firebaseService),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Current Status Card
                 if (selectedDevice != null)
                   StatusCard(
                     device: selectedDevice,
                     sensorData: sensorData,
                   ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Quick Stats
-                if (sensorData != null)
-                  QuickStats(sensorData: sensorData),
-                
+                if (sensorData != null) QuickStats(sensorData: sensorData),
+
                 const SizedBox(height: 20),
-                
+
                 // Recent Alerts Section
                 _buildRecentAlertsSection(firebaseService),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // All Devices List
                 Text(
                   'All Devices',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 ...firebaseService.devices.map(
                   (device) => DeviceCard(
                     device: device,
@@ -276,9 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        
         const SizedBox(height: 12),
-        
         ...recentAlerts.map(
           (alert) => Card(
             child: ListTile(
@@ -333,16 +320,12 @@ class _HomeScreenState extends State<HomeScreen> {
               size: 100,
               color: Colors.grey[400],
             ),
-            
             const SizedBox(height: 24),
-            
             Text(
               'No Devices Added',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
-            
             const SizedBox(height: 12),
-            
             Text(
               'Add your first gas detector to start monitoring your home',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -350,9 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
               textAlign: TextAlign.center,
             ),
-            
             const SizedBox(height: 32),
-            
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(
@@ -402,7 +383,6 @@ class _HomeScreenState extends State<HomeScreen> {
             accountName: Text(user?.displayName ?? 'User'),
             accountEmail: Text(user?.email ?? ''),
           ),
-          
           ListTile(
             leading: const Icon(Icons.home),
             title: const Text('Home'),
@@ -413,7 +393,6 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             },
           ),
-          
           ListTile(
             leading: const Icon(Icons.notifications),
             title: const Text('Alerts'),
@@ -424,7 +403,6 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             },
           ),
-          
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Settings'),
@@ -435,9 +413,7 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             },
           ),
-          
           const Divider(),
-          
           ListTile(
             leading: const Icon(Icons.info),
             title: const Text('About'),
@@ -446,7 +422,6 @@ class _HomeScreenState extends State<HomeScreen> {
               _showAboutDialog();
             },
           ),
-          
           ListTile(
             leading: const Icon(Icons.help),
             title: const Text('Help & Support'),
@@ -455,9 +430,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Helpers.showSnackBar(context, 'Help coming soon');
             },
           ),
-          
           const Divider(),
-          
           ListTile(
             leading: const Icon(Icons.logout, color: AppTheme.errorColor),
             title: const Text(

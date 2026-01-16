@@ -5,6 +5,8 @@ import 'package:gas_detector_app/widgets/gas_gauge.dart';
 import 'package:gas_detector_app/widgets/quick_stats.dart';
 import 'package:gas_detector_app/models/sensor_data_model.dart';
 import 'package:gas_detector_app/utils/theme.dart';
+import 'package:gas_detector_app/models/device_model.dart'; // Ensure path is correct
+import 'package:gas_detector_app/widgets/device_card.dart'; // Ensure path is correct
 
 void main() {
   // 1. Test the GasGauge Widget
@@ -29,8 +31,13 @@ void main() {
   // 2. Test the QuickStats Widget (Colors and Status)
   testWidgets('QuickStats shows "High" status for 600 PPM',
       (WidgetTester tester) async {
-    final sensorData = SensorData(lpg: 600.0, smoke: 0, co: 0);
-
+    final sensorData = SensorData(
+      lpg: 600.0,
+      lpgRaw: 1024, // Added
+      status: 'High', // Added
+      statusCode: 2, // Added
+      timestamp: DateTime.now(), // Added
+    );
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(

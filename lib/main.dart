@@ -118,11 +118,10 @@
 //   }
 // }
 
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart'; // Kept as you had it
+// Kept as you had it
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:permission_handler/permission_handler.dart'; // ✅ ADDED THIS
 
@@ -136,14 +135,14 @@ import 'utils/theme.dart';
 Future<void> main() async {
   // 1. Initialize Bindings (Required for async code)
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // 2. Load Environment Variables with Error Handling
   try {
     await dotenv.load(fileName: ".env");
   } catch (e) {
     debugPrint("⚠️ Warning: .env file not found or empty. Using defaults.");
   }
-  
+
   // 3. Initialize Firebase
   try {
     await Firebase.initializeApp();
@@ -154,7 +153,7 @@ Future<void> main() async {
   // 4. ✅ ANDROID 14 FIX: Request Permissions on Start
   // This prevents the "App has a bug" crash when services start early
   await requestAndroid14Permissions();
-  
+
   runApp(const MyApp());
 }
 
@@ -190,7 +189,7 @@ class MyApp extends StatelessWidget {
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
         // The Splash Screen will handle the transition to Login/Home
-        home: const SplashScreen(), 
+        home: const SplashScreen(),
         routes: {
           '/login': (context) => const LoginScreen(),
           '/home': (context) => const HomeScreen(),
