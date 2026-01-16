@@ -16,7 +16,7 @@ on:
       # 2. NEGATIVE MATCHES: Do NOT trigger for these files
       # (Note: In GitHub Actions, the last pattern to match wins)
       - '!README.md'
-    #   - '!.github/workflows/**'
+      - '!.github/workflows/**'
       - '!.gitignore'
 
 jobs:
