@@ -8,7 +8,6 @@ import '../utils/theme.dart';
 import '../utils/helpers.dart';
 import 'device_pairing_screen.dart';
 
-
 // class AddDeviceScreen extends StatefulWidget {
 //   const AddDeviceScreen({super.key});
 
@@ -260,7 +259,7 @@ class AddDeviceScreen extends StatelessWidget {
         ),
       );
     });
-    
+
     return const Scaffold(
       body: Center(
         child: CircularProgressIndicator(),

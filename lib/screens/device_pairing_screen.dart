@@ -21,18 +21,19 @@ class DevicePairingScreen extends StatefulWidget {
   State<DevicePairingScreen> createState() => _DevicePairingScreenState();
 }
 
-class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsBindingObserver {
+class _DevicePairingScreenState extends State<DevicePairingScreen>
+    with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   final _deviceIdController = TextEditingController();
   final _nameController = TextEditingController();
   final _locationController = TextEditingController();
-  
+
   // ✅ UPDATED: MobileScannerController instead of QRViewController
   final MobileScannerController _scannerController = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
     returnImage: false,
   );
-  
+
   bool _isLoading = false;
   bool _isScanning = false;
   String? _scannedDeviceId;
@@ -49,7 +50,7 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // ✅ ADDED: Handle camera pause/resume to prevent crashes
     if (!_scannerController.value.isInitialized) return;
-    
+
     switch (state) {
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
@@ -76,7 +77,7 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
   }
 
   // ==================== PAIRING METHODS ====================
-  
+
   /// Method 1: Manual Device ID Entry (UNCHANGED)
   Future<void> _pairManually() async {
     if (!_formKey.currentState!.validate()) return;
@@ -103,35 +104,35 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
       );
     }
   }
-  
+
   /// Method 2: QR Code Scanning (UPDATED)
   void _scanQRCode() {
     setState(() => _isScanning = true);
     _scannerController.start(); // Ensure camera starts
   }
-  
+
   // ✅ UPDATED: Callback for MobileScanner
   void _onDetect(BarcodeCapture capture) {
     final List<Barcode> barcodes = capture.barcodes;
-    
+
     if (barcodes.isNotEmpty) {
       final String? code = barcodes.first.rawValue;
-      
+
       if (code != null) {
         _scannerController.stop(); // Pause camera immediately
-        
+
         // Parse QR code data (format: GD_XXXXXXXX|IP_ADDRESS)
         final parts = code.split('|');
         final deviceId = parts[0];
         final ipAddress = parts.length > 1 ? parts[1] : null;
-        
+
         setState(() {
           _scannedDeviceId = deviceId;
           _deviceIpAddress = ipAddress;
           _deviceIdController.text = deviceId;
           _isScanning = false;
         });
-        
+
         // Auto-fetch device info if IP available
         if (ipAddress != null) {
           _fetchDeviceInfo(ipAddress);
@@ -139,18 +140,18 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
       }
     }
   }
-  
+
   /// Method 3: Local Network Discovery (UNCHANGED)
   Future<void> _discoverDevices() async {
     setState(() => _isLoading = true);
-    
+
     Helpers.showSnackBar(context, 'Scanning local network...');
-    
+
     // Scan local network for devices
     final devices = await _scanLocalNetwork();
-    
+
     setState(() => _isLoading = false);
-    
+
     if (devices.isEmpty) {
       Helpers.showSnackBar(
         context,
@@ -159,40 +160,42 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
       );
       return;
     }
-    
+
     // Show device selection dialog
     _showDeviceSelectionDialog(devices);
   }
-  
+
   // ==================== DEVICE PAIRING LOGIC (UNCHANGED) ====================
-  
-  Future<bool> _pairDevice(String deviceId, String name, String location) async {
+
+  Future<bool> _pairDevice(
+      String deviceId, String name, String location) async {
     final authService = Provider.of<AuthService>(context, listen: false);
-    final firebaseService = Provider.of<FirebaseService>(context, listen: false);
-    
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
+
     final user = authService.user;
     if (user == null) return false;
-    
+
     try {
       // Step 1: Configure device via HTTP (if IP known)
       if (_deviceIpAddress != null) {
         await _configureDeviceViaHTTP(_deviceIpAddress!, deviceId, user);
       }
-      
+
       // Step 2: Add device to user's account in Firebase
       final success = await firebaseService.addDevice(
         deviceId,
         name,
         location,
       );
-      
+
       return success;
     } catch (e) {
       print('Error pairing device: $e');
       return false;
     }
   }
-  
+
   Future<void> _configureDeviceViaHTTP(
     String ipAddress,
     String deviceId,
@@ -200,9 +203,9 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
   ) async {
     try {
       final firebaseFunctionUrl = dotenv.env['firebase_function_url'] ?? '';
-      
+
       final authToken = await _generateDeviceAuthToken(deviceId, user.uid);
-      
+
       final response = await http.post(
         Uri.parse('http://$ipAddress/api/configure'),
         headers: {'Content-Type': 'application/json'},
@@ -214,7 +217,7 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
           'ownerEmail': user.email,
         }),
       );
-      
+
       if (response.statusCode == 200) {
         print('✓ Device configured successfully');
       } else {
@@ -224,43 +227,46 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
       print('Error configuring device: $e');
     }
   }
-  
-  Future<String> _generateDeviceAuthToken(String deviceId, String userId) async {
+
+  Future<String> _generateDeviceAuthToken(
+      String deviceId, String userId) async {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     return 'token_${deviceId}_${userId}_$timestamp'.hashCode.toString();
   }
-  
+
   Future<void> _fetchDeviceInfo(String ipAddress) async {
     try {
       final response = await http.get(
         Uri.parse('http://$ipAddress/api/device'),
       );
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
           _deviceIdController.text = data['deviceId'] ?? '';
           _nameController.text = data['deviceName'] ?? 'Gas Detector';
         });
-        
+
         Helpers.showSnackBar(context, 'Device info loaded');
       }
     } catch (e) {
       print('Error fetching device info: $e');
     }
   }
-  
+
   Future<List<Map<String, String>>> _scanLocalNetwork() async {
     List<Map<String, String>> devices = [];
     final subnet = '192.168.1';
-    
+
     for (int i = 1; i <= 255; i++) {
       try {
         final ip = '$subnet.$i';
-        final response = await http.get(
-          Uri.parse('http://$ip/api/device'),
-        ).timeout(const Duration(milliseconds: 500));
-        
+        final response = await http
+            .get(
+              Uri.parse('http://$ip/api/device'),
+            )
+            .timeout(const Duration(milliseconds: 500));
+
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           if (data['deviceId'] != null) {
@@ -275,10 +281,10 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
         // Timeout or connection refused - continue
       }
     }
-    
+
     return devices;
   }
-  
+
   void _showDeviceSelectionDialog(List<Map<String, String>> devices) {
     showDialog(
       context: context,
@@ -330,7 +336,7 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
       body: _isScanning ? _buildQRScanner() : _buildPairingForm(),
     );
   }
-  
+
   Widget _buildPairingForm() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -399,7 +405,7 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
             const SizedBox(height: 24),
 
             const Divider(),
-            
+
             const SizedBox(height: 24),
 
             Text(
@@ -506,12 +512,10 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
                         const SizedBox(width: 8),
                         Text(
                           'Pairing Instructions',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall
-                              ?.copyWith(
-                                color: AppTheme.primaryColor,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    color: AppTheme.primaryColor,
+                                  ),
                         ),
                       ],
                     ),
@@ -533,7 +537,7 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> with WidgetsB
       ),
     );
   }
-  
+
   // ✅ UPDATED: QR Scanner UI for MobileScanner
   Widget _buildQRScanner() {
     return Column(

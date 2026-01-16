@@ -1,4 +1,3 @@
-
 // ==================== SETTINGS_SCREEN.DART ====================
 // lib/screens/settings_screen.dart
 
@@ -48,14 +47,16 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Danger Zone
-          _buildSectionTitle(context, 'Danger Zone', color: AppTheme.errorColor),
+          _buildSectionTitle(context, 'Danger Zone',
+              color: AppTheme.errorColor),
           _buildDangerZone(context, authService),
         ],
       ),
     );
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title, {Color? color}) {
+  Widget _buildSectionTitle(BuildContext context, String title,
+      {Color? color}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
@@ -375,4 +376,3 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
-

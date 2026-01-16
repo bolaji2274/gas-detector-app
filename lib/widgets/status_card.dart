@@ -54,9 +54,9 @@ class StatusCard extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Status Text
               Text(
                 status.toUpperCase(),
@@ -66,9 +66,9 @@ class StatusCard extends StatelessWidget {
                   color: Colors.white,
                 ),
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Device Name
               Text(
                 device.name,
@@ -77,9 +77,9 @@ class StatusCard extends StatelessWidget {
                   color: Colors.white.withOpacity(0.9),
                 ),
               ),
-              
+
               const SizedBox(height: 4),
-              
+
               // Last Updated
               Text(
                 'Last updated: ${device.lastSeenFormatted}',

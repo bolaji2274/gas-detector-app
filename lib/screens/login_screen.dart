@@ -37,7 +37,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authService = Provider.of<AuthService>(context, listen: false);
-    final firebaseService = Provider.of<FirebaseService>(context, listen: false);
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
 
     bool success;
 
@@ -80,7 +81,8 @@ class _LoginScreenState extends State<LoginScreen> {
   // UPDATED: Google Sign In Handler
   Future<void> _handleGoogleSignIn() async {
     final authService = Provider.of<AuthService>(context, listen: false);
-    final firebaseService = Provider.of<FirebaseService>(context, listen: false);
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
 
     final success = await authService.signInWithGoogle();
 
@@ -103,7 +105,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -330,7 +331,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // UPDATED: Google Sign In Button
                   OutlinedButton.icon(
-                    onPressed: authService.isLoading ? null : _handleGoogleSignIn,
+                    onPressed:
+                        authService.isLoading ? null : _handleGoogleSignIn,
                     icon: Image.asset(
                       'assets/icons/google.png',
                       height: 24,
@@ -385,7 +387,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ElevatedButton(
             onPressed: () async {
               final email = emailController.text.trim();
-              
+
               if (email.isEmpty) {
                 Helpers.showSnackBar(
                   context,
@@ -394,7 +396,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
                 return;
               }
-              
+
               if (!Helpers.isValidEmail(email)) {
                 Helpers.showSnackBar(
                   context,

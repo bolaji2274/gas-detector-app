@@ -59,7 +59,7 @@ class Device {
   }
 
   bool get isOnline => status == 'online';
-  
+
   String get lastSeenFormatted {
     final now = DateTime.now();
     final lastSeenDate = DateTime.fromMillisecondsSinceEpoch(lastSeen);
@@ -75,7 +75,7 @@ class Device {
       return '${difference.inDays}d ago';
     }
   }
-  
+
   String get wifiSignalStrength {
     if (wifiSignal >= -50) return 'Excellent';
     if (wifiSignal >= -60) return 'Good';
@@ -83,5 +83,3 @@ class Device {
     return 'Poor';
   }
 }
-
-

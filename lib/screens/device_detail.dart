@@ -349,9 +349,9 @@ class GasGauge extends StatelessWidget {
           'LPG/Home Gas Level',
           style: Theme.of(context).textTheme.titleLarge,
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         SizedBox(
           height: 250,
           child: SfRadialGauge(
@@ -430,9 +430,9 @@ class GasGauge extends StatelessWidget {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Legend
         Wrap(
           spacing: 16,
@@ -448,7 +448,7 @@ class GasGauge extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildLegendItem(String label, Color color, String range) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -610,7 +610,9 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                 _buildInfoItem(
                   Icons.battery_full,
                   'Power',
-                  widget.device.powerSource == 'mains' ? 'AC' : '${widget.device.batteryLevel}%',
+                  widget.device.powerSource == 'mains'
+                      ? 'AC'
+                      : '${widget.device.batteryLevel}%',
                 ),
               ],
             ),

@@ -13,14 +13,14 @@ class AppTheme {
   static const Color successColor = Color(0xFF4CAF50); // Green
   static const Color dangerColor = Color(0xFFFF6B00); // Orange
   static const Color criticalColor = Color(0xFFF44336); // Deep Red
-  
+
   // Status Colors
   static const Color safeColor = Color(0xFF4CAF50);
   static const Color warningStatusColor = Color(0xFF2196F3);
   static const Color dangerStatusColor = Color(0xFFFF9800);
   static const Color criticalStatusColor = Color(0xFFF44336);
   static const Color offlineColor = Color(0xFF9E9E9E);
-  
+
   // Light Theme
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
@@ -32,7 +32,7 @@ class AppTheme {
       surface: Colors.white,
       background: Color(0xFFF5F5F5),
     ),
-    
+
     // Text Theme
     textTheme: GoogleFonts.poppinsTextTheme().copyWith(
       displayLarge: GoogleFonts.poppins(
@@ -79,7 +79,7 @@ class AppTheme {
         color: Colors.white,
       ),
     ),
-    
+
     // App Bar Theme
     appBarTheme: AppBarTheme(
       elevation: 0,
@@ -93,7 +93,7 @@ class AppTheme {
       ),
       iconTheme: const IconThemeData(color: Colors.white),
     ),
-    
+
     // Card Theme
     cardTheme: CardThemeData(
       elevation: 2,
@@ -102,7 +102,7 @@ class AppTheme {
       ),
       color: Colors.white,
     ),
-    
+
     // Elevated Button Theme
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -117,7 +117,7 @@ class AppTheme {
         ),
       ),
     ),
-    
+
     // Input Decoration Theme
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -140,14 +140,14 @@ class AppTheme {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
-    
+
     // Icon Theme
     iconTheme: const IconThemeData(
       color: primaryColor,
       size: 24,
     ),
   );
-  
+
   // Dark Theme
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
@@ -159,9 +159,7 @@ class AppTheme {
       surface: Color(0xFF1E1E1E),
       background: Color(0xFF121212),
     ),
-    
     textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
-    
     appBarTheme: AppBarTheme(
       elevation: 0,
       centerTitle: true,
@@ -173,7 +171,6 @@ class AppTheme {
         color: Colors.white,
       ),
     ),
-    
     cardTheme: CardThemeData(
       elevation: 4.0,
       shape: RoundedRectangleBorder(
@@ -181,7 +178,6 @@ class AppTheme {
       ),
       color: const Color(0xFF1E1E1E),
     ),
-    
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         elevation: 2,
@@ -191,7 +187,6 @@ class AppTheme {
         ),
       ),
     ),
-    
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: const Color(0xFF2C2C2C),

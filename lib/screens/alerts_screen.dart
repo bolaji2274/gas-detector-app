@@ -1,4 +1,3 @@
-
 // ==================== ALERTS_SCREEN.DART ====================
 // lib/screens/alerts_screen.dart
 
@@ -310,4 +309,3 @@ class _AlertsScreenState extends State<AlertsScreen> {
     }
   }
 }
-

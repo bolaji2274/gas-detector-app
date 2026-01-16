@@ -38,9 +38,9 @@ class DeviceCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // Device Info
               Expanded(
                 child: Column(
@@ -90,18 +90,18 @@ class DeviceCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        
+
                         const SizedBox(width: 8),
-                        
+
                         // WiFi Signal
                         Icon(
                           Helpers.getWiFiIcon(device.wifiSignal),
                           size: 16,
                           color: Colors.grey[600],
                         ),
-                        
+
                         const SizedBox(width: 8),
-                        
+
                         // Battery
                         if (device.powerSource == 'battery')
                           Icon(
@@ -116,7 +116,7 @@ class DeviceCard extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               const Icon(Icons.chevron_right),
             ],
           ),

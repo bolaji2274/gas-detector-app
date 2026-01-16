@@ -27,9 +27,9 @@
 //             color: _getColorForValue(sensorData.lpg, 'lpg'),
 //           ),
 //         ),
-        
+
 //         const SizedBox(width: 12),
-        
+
 //         Expanded(
 //           child: _buildStatCard(
 //             context,
@@ -127,17 +127,17 @@ class QuickStats extends StatelessWidget {
               size: 48,
               color: _getColorForValue(sensorData.lpg),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Label
             Text(
               'LPG/Gas Level',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Value
             Text(
               '${sensorData.lpg.toStringAsFixed(0)}',
@@ -146,7 +146,7 @@ class QuickStats extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
             ),
-            
+
             // Unit
             Text(
               'PPM',
@@ -154,9 +154,9 @@ class QuickStats extends StatelessWidget {
                     color: Colors.grey,
                   ),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Status Text
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -184,7 +184,7 @@ class QuickStats extends StatelessWidget {
     if (value < 1000) return AppTheme.dangerStatusColor;
     return AppTheme.criticalStatusColor;
   }
-  
+
   String _getStatusText(double value) {
     if (value < 200) return 'Safe';
     if (value < 500) return 'Elevated';
