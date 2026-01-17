@@ -1,3 +1,6 @@
+// ==================== COMPLETE FIREBASE SERVICE ====================
+// lib/services/firebase_service.dart
+
 import 'package:flutter/foundation.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -69,9 +72,9 @@ class FirebaseService with ChangeNotifier {
       }
 
       List<String> deviceIds = [];
-      snapshot.children.forEach((child) {
+      for (var child in snapshot.children) {
         deviceIds.add(child.key!);
-      });
+      }
 
       // Load each device details
       List<Device> loadedDevices = [];
@@ -153,12 +156,12 @@ class FirebaseService with ChangeNotifier {
     _alertsRef!.onValue.listen((event) {
       if (event.snapshot.exists) {
         List<AlertModel> loadedAlerts = [];
-        event.snapshot.children.forEach((child) {
+        for (var child in event.snapshot.children) {
           loadedAlerts.add(AlertModel.fromMap(
             child.value as Map<dynamic, dynamic>,
             child.key!,
           ));
-        });
+        }
 
         // Sort by timestamp (newest first)
         loadedAlerts.sort((a, b) => b.timestamp.compareTo(a.timestamp));
@@ -169,7 +172,129 @@ class FirebaseService with ChangeNotifier {
     });
   }
 
-  /// Add new device to user account
+  /// Get unclaimed devices (NEW - For auto-pairing)
+  Future<List<Map<String, dynamic>>> getUnclaimedDevices() async {
+    try {
+      final devicesRef = _database.ref('devices');
+      final snapshot = await devicesRef.get();
+
+      if (!snapshot.exists) return [];
+
+      List<Map<String, dynamic>> unclaimedDevices = [];
+
+      for (var child in snapshot.children) {
+        final deviceData = child.value as Map<dynamic, dynamic>;
+        final deviceId = child.key!;
+        
+        // Check if device is unclaimed (no userId or userId is null/empty)
+        final userId = deviceData['userId'];
+        
+        if (userId == null || userId == '') {
+          // Get gas level from sensor data
+          int gasLevel = 0;
+          try {
+            final sensorRef = _database.ref('sensor_data/$deviceId/current');
+            final sensorSnap = await sensorRef.get();
+            if (sensorSnap.exists) {
+              final sensorData = sensorSnap.value as Map<dynamic, dynamic>;
+              gasLevel = sensorData['lpg'] ?? 0;
+            }
+          } catch (e) {
+            print('Error getting sensor data for $deviceId: $e');
+          }
+          
+          unclaimedDevices.add({
+            'deviceId': deviceId,
+            'deviceName': deviceData['name'] ?? 'Gas Detector',
+            'status': deviceData['status'] ?? 'offline',
+            'lastSeen': deviceData['lastSeen'],
+            'ipAddress': deviceData['ipAddress'],
+            'gasLevel': gasLevel,
+          });
+        }
+      }
+
+      // Sort by last seen (most recent first)
+      unclaimedDevices.sort((a, b) {
+        final aTime = a['lastSeen'] ?? 0;
+        final bTime = b['lastSeen'] ?? 0;
+        return bTime.compareTo(aTime);
+      });
+
+      return unclaimedDevices;
+    } catch (e) {
+      print('Error getting unclaimed devices: $e');
+      return [];
+    }
+  }
+
+  /// Claim a device (NEW - For auto-pairing)
+  Future<bool> claimDevice(
+    String deviceId,
+    String userId,
+    String deviceName,
+    String location,
+  ) async {
+    try {
+      // Update device with user ID and custom name/location
+      await _database.ref('devices/$deviceId').update({
+        'userId': userId,
+        'name': deviceName,
+        'location': location,
+        'pairedAt': ServerValue.timestamp,
+      });
+
+      // Add device to user's device list
+      await _database.ref('users/$userId/devices/$deviceId').set(true);
+
+      // Create default settings for this device (if not exists)
+      final settingsRef = _database.ref('device_settings/$deviceId');
+      final settingsSnapshot = await settingsRef.get();
+      
+      if (!settingsSnapshot.exists) {
+        await settingsRef.set({
+          'thresholds': {
+            'lpg': {
+              'safe': 300,
+              'warning': 1000,
+              'danger': 2500,
+              'critical': 5000,
+            },
+            'co': {
+              'safe': 30,
+              'warning': 100,
+              'danger': 200,
+              'critical': 400,
+            },
+          },
+          'alerts': {
+            'pushEnabled': true,
+            'emailEnabled': true,
+            'buzzerEnabled': true,
+            'relayEnabled': true,
+          },
+          'notifications': {
+            'safeToWarning': true,
+            'warningToDanger': true,
+            'dangerToCritical': true,
+            'backToSafe': true,
+            'offline': true,
+            'batteryLow': true,
+          },
+        });
+      }
+
+      // Reload user devices
+      await loadUserDevices();
+
+      return true;
+    } catch (e) {
+      print('Error claiming device: $e');
+      return false;
+    }
+  }
+
+  /// Add new device to user account (UPDATED to use claim)
   Future<bool> addDevice(String deviceId, String name, String location) async {
     try {
       final user = _auth.currentUser;
@@ -180,11 +305,11 @@ class FirebaseService with ChangeNotifier {
       final snapshot = await deviceRef.get();
 
       if (!snapshot.exists) {
-        // Create new device
+        // Create new device as unclaimed first
         await deviceRef.set({
           'name': name,
           'location': location,
-          'userId': user.uid,
+          'userId': null, // Unclaimed
           'status': 'offline',
           'lastSeen': ServerValue.timestamp,
           'hardwareVersion': '1.0',
@@ -224,13 +349,8 @@ class FirebaseService with ChangeNotifier {
         });
       }
 
-      // Add device to user's device list
-      await _database.ref('users/${user.uid}/devices/$deviceId').set(true);
-
-      // Reload devices
-      await loadUserDevices();
-
-      return true;
+      // Claim the device
+      return await claimDevice(deviceId, user.uid, name, location);
     } catch (e) {
       print('Error adding device: $e');
       return false;
@@ -243,7 +363,16 @@ class FirebaseService with ChangeNotifier {
       final user = _auth.currentUser;
       if (user == null) return false;
 
+      // Remove device from user's list
       await _database.ref('users/${user.uid}/devices/$deviceId').remove();
+      
+      // Set device as unclaimed (don't delete it)
+      await _database.ref('devices/$deviceId').update({
+        'userId': null,
+        'name': 'Gas Detector',
+        'location': 'Unknown',
+      });
+      
       await loadUserDevices();
 
       return true;
@@ -270,11 +399,11 @@ class FirebaseService with ChangeNotifier {
 
       if (snapshot.exists) {
         List<SensorData> data = [];
-        snapshot.children.forEach((child) {
+        for (var child in snapshot.children) {
           data.add(SensorData.fromMap(
             child.value as Map<dynamic, dynamic>,
           ));
-        });
+        }
 
         // Sort by timestamp
         data.sort((a, b) => a.timestamp.compareTo(b.timestamp));
@@ -297,12 +426,12 @@ class FirebaseService with ChangeNotifier {
 
       if (snapshot.exists) {
         List<AlertModel> loadedAlerts = [];
-        snapshot.children.forEach((child) {
+        for (var child in snapshot.children) {
           loadedAlerts.add(AlertModel.fromMap(
             child.value as Map<dynamic, dynamic>,
             child.key!,
           ));
-        });
+        }
 
         // Sort by timestamp (newest first)
         loadedAlerts.sort((a, b) => b.timestamp.compareTo(a.timestamp));
@@ -327,7 +456,6 @@ class FirebaseService with ChangeNotifier {
         'acknowledgedBy': user.uid,
       });
 
-      // Reload alerts
       await loadAlerts(deviceId);
     } catch (e) {
       print('Error acknowledging alert: $e');
@@ -437,7 +565,7 @@ class FirebaseService with ChangeNotifier {
       double maxCo = 0;
       int count = 0;
 
-      snapshot.children.forEach((child) {
+      for (var child in snapshot.children) {
         final data = child.value as Map<dynamic, dynamic>;
         final lpg = (data['lpgAvg'] ?? 0).toDouble();
         final co = (data['coAvg'] ?? 0).toDouble();
@@ -447,7 +575,7 @@ class FirebaseService with ChangeNotifier {
         maxLpg = lpg > maxLpg ? lpg : maxLpg;
         maxCo = co > maxCo ? co : maxCo;
         count++;
-      });
+      }
 
       // Get alert count
       final alertsSnapshot = await _database
@@ -475,7 +603,6 @@ class FirebaseService with ChangeNotifier {
 
   // ==================== CLEANUP ====================
 
-  /// Dispose listeners
   @override
   void dispose() {
     _devicesRef?.onValue.drain();
