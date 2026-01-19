@@ -9,7 +9,7 @@ import '../utils/helpers.dart';
 import '../widgets/device_card.dart';
 import '../widgets/status_card.dart';
 import '../widgets/quick_stats.dart';
-import 'device_detail_screen.dart';
+import 'device_detail.dart';
 import 'alerts_screen.dart';
 import 'settings_screen.dart';
 import 'add_device_screen.dart';
