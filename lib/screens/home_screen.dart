@@ -77,24 +77,18 @@ class _HomeScreenState extends State<HomeScreen> {
               : const SettingsScreen(),
       floatingActionButton: _selectedIndex == 0
           ? FloatingActionButton(
-              // onPressed: () {
-              //   Navigator.push(
-              //     context,
-              //     MaterialPageRoute(
-              //       builder: (context) => const AddDeviceScreen(),
-              //     ),
-              //   );
-              // ✅ CHANGE TO ASYNC AND ADD REFRESH:
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AddDeviceScreen(),
-                ),
-              );
-              // Reload data after pairing
-              await _loadData();
-
-              },
+              onPressed: () async {
+                // <--- THIS WAS MISSING
+                // ✅ CHANGE TO ASYNC AND ADD REFRESH:
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddDeviceScreen(),
+                  ),
+                );
+                // Reload data after pairing
+                await _loadData();
+              }, // <--- CLOSING BRACE WAS MISSING
               child: const Icon(Icons.add),
             )
           : null,
