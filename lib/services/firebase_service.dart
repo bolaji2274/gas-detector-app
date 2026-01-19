@@ -109,6 +109,9 @@ class FirebaseService with ChangeNotifier {
       orElse: () => _devices[0],
     );
 
+    // ✅ ADD THIS LOG:
+    print('✓ Selected device: ${_selectedDevice?.id}');
+
     // Setup listeners for this device
     _setupDeviceListeners(deviceId);
 
@@ -147,6 +150,7 @@ class FirebaseService with ChangeNotifier {
         _currentSensorData = SensorData.fromMap(
           event.snapshot.value as Map<dynamic, dynamic>,
         );
+        print('📊 Gas level: ${_currentSensorData?.lpg} PPM'); // ✅ ADD THIS
         notifyListeners();
       }
     });
@@ -185,10 +189,10 @@ class FirebaseService with ChangeNotifier {
       for (var child in snapshot.children) {
         final deviceData = child.value as Map<dynamic, dynamic>;
         final deviceId = child.key!;
-        
+
         // Check if device is unclaimed (no userId or userId is null/empty)
         final userId = deviceData['userId'];
-        
+
         if (userId == null || userId == '') {
           // Get gas level from sensor data
           int gasLevel = 0;
@@ -202,7 +206,7 @@ class FirebaseService with ChangeNotifier {
           } catch (e) {
             print('Error getting sensor data for $deviceId: $e');
           }
-          
+
           unclaimedDevices.add({
             'deviceId': deviceId,
             'deviceName': deviceData['name'] ?? 'Gas Detector',
@@ -250,7 +254,7 @@ class FirebaseService with ChangeNotifier {
       // Create default settings for this device (if not exists)
       final settingsRef = _database.ref('device_settings/$deviceId');
       final settingsSnapshot = await settingsRef.get();
-      
+
       if (!settingsSnapshot.exists) {
         await settingsRef.set({
           'thresholds': {
@@ -286,6 +290,15 @@ class FirebaseService with ChangeNotifier {
 
       // Reload user devices
       await loadUserDevices();
+      // ✅ ADD THESE LINES:
+      // Auto-select the newly claimed device
+      if (_devices.isNotEmpty) {
+        final claimedDevice = _devices.firstWhere(
+          (d) => d.id == deviceId,
+          orElse: () => _devices[0],
+        );
+        selectDevice(claimedDevice.id);
+      }
 
       return true;
     } catch (e) {
@@ -365,14 +378,14 @@ class FirebaseService with ChangeNotifier {
 
       // Remove device from user's list
       await _database.ref('users/${user.uid}/devices/$deviceId').remove();
-      
+
       // Set device as unclaimed (don't delete it)
       await _database.ref('devices/$deviceId').update({
         'userId': null,
         'name': 'Gas Detector',
         'location': 'Unknown',
       });
-      
+
       await loadUserDevices();
 
       return true;

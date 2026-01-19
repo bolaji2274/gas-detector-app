@@ -181,6 +181,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => FirebaseService()),
+        // ✅ ADD THIS LINE:
+        ChangeNotifierProvider(
+            create: (_) => NotificationService()..initialize()),
       ],
       child: MaterialApp(
         title: 'Gas Detector',

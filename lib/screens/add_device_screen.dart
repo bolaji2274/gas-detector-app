@@ -1,8 +1,8 @@
 // ==================== ADD_DEVICE_SCREEN.DART ====================
 // lib/screens/add_device_screen.dart
 
-import 'package:flutter/material.dart';
-import 'device_pairing_screen.dart';
+// import 'package:flutter/material.dart';
+// import 'device_pairing_screen.dart';
 
 // class AddDeviceScreen extends StatefulWidget {
 //   const AddDeviceScreen({super.key});
@@ -240,6 +240,9 @@ import 'device_pairing_screen.dart';
 //     );
 //   }
 // }
+
+import 'package:flutter/material.dart';
+import 'device_pairing_screen.dart';
 
 class AddDeviceScreen extends StatelessWidget {
   const AddDeviceScreen({super.key});

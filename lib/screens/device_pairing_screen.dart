@@ -54,11 +54,12 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
     setState(() => _isScanning = true);
 
     try {
-      final firebaseService = Provider.of<FirebaseService>(context, listen: false);
-      
+      final firebaseService =
+          Provider.of<FirebaseService>(context, listen: false);
+
       // Get all unclaimed devices from Firebase
       final devices = await firebaseService.getUnclaimedDevices();
-      
+
       setState(() {
         _availableDevices = devices;
         _isScanning = false;
@@ -145,9 +146,11 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
 
   // ==================== DEVICE PAIRING LOGIC ====================
 
-  Future<bool> _pairDevice(String deviceId, String name, String location) async {
+  Future<bool> _pairDevice(
+      String deviceId, String name, String location) async {
     final authService = Provider.of<AuthService>(context, listen: false);
-    final firebaseService = Provider.of<FirebaseService>(context, listen: false);
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
 
     final user = authService.user;
     if (user == null) return false;
@@ -197,16 +200,16 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
           children: [
             // Header
             _buildHeader(),
-            
+
             const SizedBox(height: 32),
 
             // Available Devices Section
             _buildAvailableDevicesSection(),
 
             const SizedBox(height: 32),
-            
+
             const Divider(),
-            
+
             const SizedBox(height: 24),
 
             // Manual Entry Section
@@ -276,7 +279,6 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        
         if (_availableDevices.isEmpty && !_isScanning)
           Card(
             child: Padding(
@@ -316,7 +318,9 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
             ),
           )
         else if (_availableDevices.isNotEmpty)
-          ..._availableDevices.map((device) => _buildDeviceCard(device)).toList(),
+          ..._availableDevices
+              .map((device) => _buildDeviceCard(device))
+              .toList(),
       ],
     );
   }
@@ -425,7 +429,6 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          
           TextFormField(
             controller: _deviceIdController,
             decoration: const InputDecoration(
@@ -444,7 +447,6 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
             },
           ),
           const SizedBox(height: 16),
-          
           TextFormField(
             controller: _nameController,
             decoration: const InputDecoration(
@@ -460,7 +462,6 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
             },
           ),
           const SizedBox(height: 16),
-          
           TextFormField(
             controller: _locationController,
             decoration: const InputDecoration(
@@ -476,7 +477,6 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
             },
           ),
           const SizedBox(height: 24),
-          
           ElevatedButton(
             onPressed: _isLoading ? null : _pairManually,
             style: ElevatedButton.styleFrom(
@@ -542,7 +542,7 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
 
   String _formatLastSeen(dynamic lastSeen) {
     if (lastSeen == null) return 'Unknown';
-    
+
     try {
       DateTime dateTime;
       if (lastSeen is int) {
@@ -550,10 +550,10 @@ class _DevicePairingScreenState extends State<DevicePairingScreen> {
       } else {
         return 'Unknown';
       }
-      
+
       final now = DateTime.now();
       final difference = now.difference(dateTime);
-      
+
       if (difference.inMinutes < 1) {
         return 'Just now';
       } else if (difference.inMinutes < 60) {
