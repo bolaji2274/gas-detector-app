@@ -124,6 +124,7 @@ import 'package:provider/provider.dart';
 // Kept as you had it
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:permission_handler/permission_handler.dart'; // ✅ ADDED THIS
+import 'services/notification_service.dart';
 
 import 'services/firebase_service.dart';
 import 'services/auth_service.dart';
@@ -183,7 +184,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FirebaseService()),
         // ✅ ADD THIS LINE:
         ChangeNotifierProvider(
-            create: (_) => NotificationService()..initialize()),
+            create: (_) => NotificationService()..initialize(),
       ],
       child: MaterialApp(
         title: 'Gas Detector',
