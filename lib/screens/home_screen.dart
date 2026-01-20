@@ -88,6 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
                 // Reload data after pairing
                 await _loadData();
+                setState(() {}); // Force rebuild
               }, // <--- CLOSING BRACE WAS MISSING
               child: const Icon(Icons.add),
             )

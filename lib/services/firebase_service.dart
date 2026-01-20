@@ -146,12 +146,16 @@ class FirebaseService with ChangeNotifier {
     // Sensor data listener
     _sensorDataRef = _database.ref('sensor_data/$deviceId/current');
     _sensorDataRef!.onValue.listen((event) {
+      // ✅ ADD THIS LOG:
+      print('📊 Sensor data update received for $deviceId');
       if (event.snapshot.exists) {
         _currentSensorData = SensorData.fromMap(
           event.snapshot.value as Map<dynamic, dynamic>,
         );
         print('📊 Gas level: ${_currentSensorData?.lpg} PPM'); // ✅ ADD THIS
         notifyListeners();
+      } else {
+        print('❌ No sensor data exists for $deviceId'); // ✅ DEBUG LOG
       }
     });
 

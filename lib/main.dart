@@ -182,7 +182,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => FirebaseService()),
-      // Adding <NotificationService> ensures other widgets can find it easily
+        // Adding <NotificationService> ensures other widgets can find it easily
         ChangeNotifierProvider<NotificationService>(
             create: (_) => NotificationService()..initialize()),
       ],
