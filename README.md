@@ -59,7 +59,7 @@ Safety is paramount. This system uses an **MQ-6 Gas Sensor** to detect LPG, buta
 
 ### 🤖 Hardware (IoT)
 * **Gas Sensing:** Continuous monitoring using the MQ-6 sensor.
-* **Visual Output:** Real-time status display on an OLED screen.
+* **Visual Output:** Real-time status display on an OLED screen display.
 * **Audio Alert:** Loud buzzer activation for immediate local warning.
 * **Wi-Fi Connectivity:** ESP32 connects directly to the internet to sync data.
 
@@ -139,10 +139,11 @@ Connect the components to the ESP32 as follows:
     * Enable **Authentication** (Email/Password).
     * Enable **Cloud Messaging**.
 4.  Install dependencies:
+5.  
     ```bash
     flutter pub get
     ```
-5.  Run the app:
+6.  Run the app:
     ```bash
     flutter run
     ```
