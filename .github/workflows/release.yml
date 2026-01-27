@@ -8,6 +8,7 @@ on:
     # ONLY trigger if files in these folders change:
     paths:
       # 1. POSITIVE MATCHES: Trigger for these folders
+
       - 'lib/**'
       - 'pubspec.yaml'
       - 'android/**'
@@ -23,7 +24,7 @@ jobs:
   build:
     name: Build and Release APK
     runs-on: ubuntu-latest
-    # Required to allow the action to create a Release
+    # Required to allow the action to create a Release versions
     permissions:
       contents: write
 
